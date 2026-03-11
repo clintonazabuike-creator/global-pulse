@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Pulse | Live Stream</title>
+    <style>
+        :root { --neon: #00ff41; --bg: #000; }
+        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; padding: 20px; margin: 0; }
+        .data-stream { border-left: 2px solid var(--neon); padding-left: 15px; margin-bottom: 30px; }
+        .label { font-size: 10px; opacity: 0.7; text-transform: uppercase; letter-spacing: 2px; }
+        .value { font-size: 24px; font-weight: bold; margin: 5px 0; }
+        .map-box { width: 100%; height: 150px; background: #111; border: 1px solid #222; margin-top: 10px; display: flex; align-items: center; justify-content: center; font-size: 10px; text-align: center; }
+        .pulse { animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    </style>
+</head>
+<body>
+
+    <div class="data-stream">
+        <div class="label"><span class="pulse">●</span> Financial Breath (USD/NGN Volatility)</div>
+        <div class="value" id="currency-pulse">Calculating...</div>
+    </div>
+
+    <div class="data-stream">
+        <div class="label">Humanity in Orbit (ISS Coordinates)</div>
+        <div class="value" id="iss-coords">Lat: -- | Lon: --</div>
+        <div class="map-box" id="map-status">INITIALIZING ORBITAL TRACKING...</div>
+    </div>
+
+    <footer style="font-size: 10px; opacity: 0.5; margin-top: 50px;">
+        OS_MODULE_PULSE_v1.0 <br> STREAMING VIA OPEN_API
+    </footer>
+
+    <script>
+        // ISS Tracking Logic
+        async function trackISS() {
+            try {
+                const res = await fetch('https://api.wheretheiss.at/v1/satellites/25544');
+                const data = await res.json();
+                document.getElementById('iss-coords').innerText = 
+                    `LAT: ${data.latitude.toFixed(2)} | LON: ${data.longitude.toFixed(2)}`;
+                document.getElementById('map-status').innerText = 
+                    `ALTITUDE: ${data.altitude.toFixed(0)} KM \n VELOCITY: ${data.velocity.toFixed(0)} KM/H`;
+            } catch (e) { console.log("ISS data error"); }
+        }
+
+        // Currency "Breath" Logic
+        async function trackCurrency() {
+            try {
+                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=ngn');
+                const data = await res.json();
+                const rate = data.tether.ngn;
+                document.getElementById('currency-pulse').innerText = `₦${rate.toLocaleString()}`;
+            } catch (e) { console.log("Currency pulse error"); }
+        }
+
+        setInterval(trackISS, 5000);
+        setInterval(trackCurrency, 30000);
+        trackISS(); trackCurrency();
+    </script>
+</body>
+</html>
